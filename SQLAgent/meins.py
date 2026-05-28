@@ -13,7 +13,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 class SQLResponse(BaseModel):
     sql: str = Field(description="AI Answer as SQL query")
     confidence: float
-
+    tables: List[str]
 
 
 def get_allowed_schema():
@@ -105,17 +105,30 @@ frage ="Zeige mir alle tasks die seit 3 Jahren beendet wurden"  #OK
 
 chain = prompt | llm | parser     
 
-# SQL generieren
-response = chain.invoke({"schema": get_allowed_schema(), "question": frage, "format_instructions": parser.get_format_instructions()})
+print("Text to SQL Chat gestartet (tippe 'exit' oder 'quit' zum Beenden)\n")
+
+while True:
+
+    user_input = input("Du: ")
+
+    if user_input.lower() in["exit", "quit"]:
+        print("Chat Beendet.")
+        break 
+
+    # SQL generieren
+    response = chain.invoke({"schema": get_allowed_schema(), "question": user_input, "format_instructions": parser.get_format_instructions()})
 
 
-print(response.sql)
-print(validate_sql(response.sql))
+    print("--> " + response.sql + "\n")
+    print(response.tables)
 
-rows = execute_read_only_query(response.sql)
+    #print(validate_sql(response.sql))
 
-for row in rows:
-    print(row)
+    rows = execute_read_only_query(response.sql)
+    print("--> Database results:\n ")
+
+    for row in rows:
+        print(row)
 #print(len(rows))
 #[{'count': 2}]
 
