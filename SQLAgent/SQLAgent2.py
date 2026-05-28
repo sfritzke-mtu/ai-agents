@@ -34,9 +34,6 @@ engine = create_engine('postgresql+psycopg://docker:docker@localhost/exampledb')
 # }
 
 
-#Langchain SQLAgent
-#https://github.com/EliasK93/LangChain-SQL-Agent-for-dynamic-data-visualization/blob/master/agent_tools.py
-
 def setupDatabase():
     with engine.connect() as conn:
 

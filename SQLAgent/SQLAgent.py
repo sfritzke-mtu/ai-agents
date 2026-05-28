@@ -1,10 +1,7 @@
+#Funktioniert nicht gut. Macht sehr viele loops bis irgendwann eine Antwort kommt.
 #install psycopg
 #install psycopg-binary
 import psycopg
-from sqlalchemy import create_engine
-from sqlalchemy import insert, MetaData, Table 
-import sqlalchemy
-from sqlalchemy import text
 
 #pip install langchain
 #pip install langchain-openai
@@ -13,11 +10,12 @@ from langchain_openai import ChatOpenAI
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
+from Database import setupDatabase
 
 
-#docker compose -up d database adminer
+#docker compose up -d database adminer
 
-engine = create_engine('postgresql+psycopg://docker:docker@localhost/exampledb')
+
 
 # Define custom table info for better LLM context
 # custom_table_info = {
@@ -32,57 +30,8 @@ engine = create_engine('postgresql+psycopg://docker:docker@localhost/exampledb')
 # }
 
 
-#Langchain SQLAgent
-#https://github.com/EliasK93/LangChain-SQL-Agent-for-dynamic-data-visualization/blob/master/agent_tools.py
 
-def setupDatabase():
-    with engine.connect() as conn:
-
-        if not sqlalchemy.inspect(engine).has_table("tasks"):
-            print("Creating tasks table...")
-
-            conn.execute(text('''CREATE TABLE IF NOT EXISTS tasks
-                    (id SERIAL PRIMARY KEY,
-                    task TEXT NOT NULL,
-                    completed BOOLEAN,
-                    due_date DATE,
-                    completion_date DATE,
-                    priority INTEGER)'''))
-            
-            # Insert sample tasks into the tasks table
-            print("Inserting sample tasks ...")
-
-            conn.commit()
-            
-            metadata = MetaData()
-            tasks = Table('tasks', metadata, autoload_with=engine)
-
-            stmt = insert(tasks).values(task='Complete the web page design', completed=True, due_date = '2023-05-01', completion_date='2023-05-03', priority = 1)
-            result = conn.execute(stmt)
-            
-            stmt = insert(tasks).values(task='Create login and signup pages', completed=True, due_date = '2023-05-03', completion_date='2023-05-05', priority = 2)
-            result = conn.execute(stmt)
-
-            stmt = insert(tasks).values(task='Product management', completed=False, due_date = '2023-05-05', priority = 3)
-            result = conn.execute(stmt)
-
-            stmt = insert(tasks).values(task='Cart and wishlist creation', completed=False, due_date = '2023-05-08', priority = 4)
-            result = conn.execute(stmt)
-
-            stmt = insert(tasks).values(task='Payment gateway integration', completed=False, due_date = '2023-05-10', priority = 5)
-            result = conn.execute(stmt)
-
-            stmt = insert(tasks).values(task='Order management', completed=False, due_date = '2023-05-10', priority = 6)
-            result = conn.execute(stmt)
-            
-            conn.commit()
-        else:
-            print("tasks table already exists!")
-
-
-
-setupDatabase()
-
+setupDatabase('postgresql+psycopg://docker:docker@localhost/exampledb')
 
 db = SQLDatabase.from_uri("postgresql+psycopg://docker:docker@localhost:5432/exampledb")
 
